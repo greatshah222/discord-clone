@@ -38,3 +38,35 @@ export const PATCH = async (req: Request, { params }: { params: { serverId: stri
 		});
 	}
 };
+
+export const DELETE = async (req: Request, { params }: { params: { serverId: string } }) => {
+	try {
+		const profile = await currentProfile();
+
+		if (!profile) {
+			return new NextResponse("Unauthorized", {
+				status: 401,
+			});
+		}
+
+		if (!params?.serverId) {
+			return new NextResponse("Server ID is missing", {
+				status: 400,
+			});
+		}
+
+		const server = await db.server.delete({
+			where: {
+				id: params.serverId,
+				profileId: profile.id, // can only be done by admin
+			},
+		});
+
+		return NextResponse.json(server);
+	} catch (error) {
+		console.log(["SERVER_ID_DELETE", error]);
+		return new NextResponse("Interal Error", {
+			status: 500,
+		});
+	}
+};
